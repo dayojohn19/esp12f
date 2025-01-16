@@ -21,6 +21,7 @@ with open('configs/esp12settings.json') as f:
     stop_blinking()
     firmware_url = giturl
     for file in files:
+        print(f"updating: ",{file})
         led.value(0)
         ota_updater = OTAUpdater(SSID,PASSWORD,firmware_url,file)
         ota_updater.download_and_install_update_if_available()

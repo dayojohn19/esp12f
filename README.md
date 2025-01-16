@@ -1,7 +1,7 @@
 # Everyday Update
 
 >   - after saving always run the following [git link](https://github.com/dayojohn19/esp12f/tree/main)
->   -   always edit the version.json file
+>   -   edit the version.json file
 
 ```
 git add .

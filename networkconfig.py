@@ -5,26 +5,7 @@ import json
 import time
 import esp  
 import machine
-timer = None
-# Initialize GPIO2 pin as output (Onboard LED for ESP12-F)
-led = machine.Pin(2, machine.Pin.OUT)
-def blink_led(timer):
-    led.value(not led.value())  # Toggle LED state
-
-def start_blinking(speed=500):
-    global timer  # Declare timer as global to modify it
-    # Create and start the timer (Timer 0)
-    if timer is None:  # Only create the timer if it's not already created
-        timer = machine.Timer(0)
-        timer.init(period=speed, mode=machine.Timer.PERIODIC, callback=blink_led)
-        print("LED blinking started.")
-def stop_blinking():
-    global timer  # Access the global timer
-    if timer is not None:
-        timer.deinit()  # Stop the timer
-        timer = None  # Reset the global timer to None
-        print("LED blinking stopped.")
-
+from led_signal import *
 wlan_ap = network.WLAN(network.AP_IF)
 wlan_sta = network.WLAN(network.STA_IF)
 
@@ -110,25 +91,80 @@ def stop():
     if server_socket:
         server_socket.close()
 
-def start(port=80):
-    start_blinking(1000)
-    addr = socket.getaddrinfo('192.168.4.1', 80)[0][-1]
-    
-    global server_socket
-    
-    stop()
-    
-    server_socket = socket.socket()
-    server_socket.bind(addr)
-    server_socket.listen(1)
 
-    print('listening on', addr)
-    
+def handle_server(client):
+    import os
+    server_header = """
+    <h1>Files in Config</h1>
+    <ul>
+    """
+    server_variable = ""
+    directory = '/configs'  # Change to your desired path
+    files = os.listdir(directory)
+    for file in files:
+        pfile = directory+'/'+file
+        if os.stat(pfile)[0] == 0x4000:
+            print('its a path not file')
+            pass
+        else:
+            server_variable += f"""<li><a target="_blank" href="{pfile}" download="{file}">
+             {file}</a></li>
+               """
+
+    server_footer = """
+    </ul>
+    """
+    send_response(client, server_header + server_variable + server_footer)
+
+def stop_server(timer):
+    global server_socket
+    if server_socket:
+        print("Stopping the server...")
+        server_socket.close()  # Close the server socket
+        server_socket = None
+    led.value(1)
+
+def temporary_server():
+    print("server Starting")
+    led.value(0)
+    addr = socket.getaddrinfo('192.168.4.1', 80)[0][-1]
+    global server_socket
+    server_socket = socket.socket()
+    server_socket.listen(1)
+    print('30sec listening on', addr)
+    temporary_timer = machine.Timer(1)
+    temporary_timer.init(period=30000, mode=machine.Timer.ONE_SHOT, callback=stop_server)
     while True:
         client, addr = server_socket.accept()
         client.settimeout(5.0)
         print('client connected from', addr)
-        
+        request = b""
+        try:
+            while not "\r\n\r\n" in request:
+                request += client.recv(512)
+        except OSError:
+            pass
+        if "HTTP" not in request:
+            client.close()
+            continue
+        url = ure.search("(?:GET|POST) /(.*?)(?:\\?.*?)? HTTP", request.decode('ascii')).group(1).rstrip("/")
+        if url == "":
+            handle_server(client)
+
+
+def start(port=80):
+    start_blinking(1000)
+    addr = socket.getaddrinfo('192.168.4.1', 80)[0][-1]
+    global server_socket
+    stop()
+    server_socket = socket.socket()
+    server_socket.bind(addr)
+    server_socket.listen(1)
+    print('listening on', addr)
+    while True:
+        client, addr = server_socket.accept()
+        client.settimeout(5.0)
+        print('client connected from', addr)
         request = b""
         try:
             while not "\r\n\r\n" in request:
@@ -161,9 +197,11 @@ def start(port=80):
 
 
 def connectWifi(wifiSSID=None,wifiPassword=None): # option to put SSID AND PAssword
-    start_blinking(150)
     wlan = network.WLAN(network.STA_IF)
     wlan.active(True)
+    print('Temporary Making Server')
+    temporary_server() # Temporary open a server
+    start_blinking(150)
     import gc
     # wlan.PM_POWERSAVE
     time.sleep(1)
@@ -214,6 +252,5 @@ def connectWifi(wifiSSID=None,wifiPassword=None): # option to put SSID AND PAssw
 
 
 
-
-
+connectWifi()
 
