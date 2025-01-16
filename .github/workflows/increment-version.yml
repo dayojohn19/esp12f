@@ -1,0 +1,48 @@
+name: Increment Version on Push
+
+on:
+  push:
+    branches:
+      - main  # Adjust the branch name if necessary
+
+jobs:
+  increment-version:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout the repository
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      # Step 2: Check if there are code changes other than `version.json`
+      - name: Check for code changes
+        id: changes
+        run: |
+          # Check if there are any code changes excluding version.json
+          git diff --exit-code version.json || echo "Version file changed" # If version.json has changed, do nothing
+          if git diff --name-only HEAD~1 | grep -v 'version.json'; then
+            echo "Changes detected in code files"
+            echo "increment_version=true" >> $GITHUB_ENV
+          else
+            echo "No code changes detected, skipping version increment"
+            echo "increment_version=false" >> $GITHUB_ENV
+          fi
+
+      # Step 3: Increment Version if there were code changes
+      - name: Increment Version
+        if: env.increment_version == 'true'  # This step only runs if there were code changes
+        run: |
+          VERSION=$(jq '.version + 1' version.json)  # Increment the version number
+          jq ".version = $VERSION" version.json > temp.json && mv temp.json version.json
+
+      # Step 4: Commit and Push Changes (only if version was incremented)
+      - name: Commit and Push Changes
+        if: env.increment_version == 'true'  # Only commit if version was incremented
+        run: |
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "GitHub Actions"
+          git add version.json
+          git commit -m "Increment version number"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
