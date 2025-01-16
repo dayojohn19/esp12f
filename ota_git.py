@@ -14,11 +14,21 @@ with open('configs/wifiSettings.json') as f:
     SSID = config['ssid']
     PASSWORD = config['ssid_password']
 
-firmware_url = "https://github.com/dayojohn19/esp12f/"
+with open('configs/esp12settings.json') as f:
+    config = json.load(f)
+    giturl = config['giturl']
+    files   = config['files']
+    stop_blinking()
+    firmware_url = giturl
+    for file in files:
+        led.value(0)
+        ota_updater = OTAUpdater(SSID,PASSWORD,firmware_url,file)
+        ota_updater.download_and_install_update_if_available()
+        led.value(1)
+        time.sleep(1)
+led.value(1)
 
 # ota_updater = OTAUpdater(SSID, PASSWORD, firmware_url, "test.text")
 
-ota_updater = OTAUpdater(SSID, PASSWORD, firmware_url, "main.py")
-ota_updater.download_and_install_update_if_available()
 
-stop_blinking()
+# stop_blinking()

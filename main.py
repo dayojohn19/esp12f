@@ -1,5 +1,5 @@
 import networkconfig
-networkconfig.connectWifi()
+# networkconfig.connectWifi()
 
 
 print("get try versioning 3")
