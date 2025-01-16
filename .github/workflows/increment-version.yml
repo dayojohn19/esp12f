@@ -3,7 +3,7 @@ name: Increment Version on Push
 on:
   push:
     branches:
-      - main  # Adjust the branch name if necessary
+      - main  # Change to your default branch name if it's different (e.g., 'master')
 
 jobs:
   increment-version:
@@ -14,30 +14,15 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      # Step 2: Check if there are code changes other than `version.json`
-      - name: Check for code changes
-        id: changes
-        run: |
-          # Check if there are any code changes excluding version.json
-          git diff --exit-code version.json || echo "Version file changed" # If version.json has changed, do nothing
-          if git diff --name-only HEAD~1 | grep -v 'version.json'; then
-            echo "Changes detected in code files"
-            echo "increment_version=true" >> $GITHUB_ENV
-          else
-            echo "No code changes detected, skipping version increment"
-            echo "increment_version=false" >> $GITHUB_ENV
-          fi
-
-      # Step 3: Increment Version if there were code changes
+      # Step 2: Increment the version number in the version.json file
       - name: Increment Version
-        if: env.increment_version == 'true'  # This step only runs if there were code changes
         run: |
-          VERSION=$(jq '.version + 1' version.json)  # Increment the version number
+          # Read the current version from version.json, increment it, and write it back
+          VERSION=$(jq '.version + 1' version.json)  # Increment the version
           jq ".version = $VERSION" version.json > temp.json && mv temp.json version.json
 
-      # Step 4: Commit and Push Changes (only if version was incremented)
+      # Step 3: Commit the updated version.json and push it back to the repository
       - name: Commit and Push Changes
-        if: env.increment_version == 'true'  # Only commit if version was incremented
         run: |
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global user.name "GitHub Actions"
