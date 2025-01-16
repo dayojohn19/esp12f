@@ -9,7 +9,7 @@ import machine
 from led_signal import *
 wlan_ap = network.WLAN(network.AP_IF)
 wlan_sta = network.WLAN(network.STA_IF)
-
+temp_server_timeout = 180
 server_socket = None
 
 def wait_to_connect(wlan_sta):
@@ -92,7 +92,7 @@ def stop():
 def handle_server(client, ntimeout):
     import os
     server_header = f"""
-    <h2>Server Remaining runtime {ntimeout}</h2>
+    <h2>Server Remaining runtime {ntimeout} of {temp_server_timeout}</h2>
     <h1>Files in Config</h1>
     <ul>
     """
@@ -159,43 +159,53 @@ def temporary_server():
     server_socket = socket.socket()
     server_socket.bind(addr)
     server_socket.listen(1)
-    print('60sec listening on', addr)
+    server_socket.setblocking(False)
+    # server_socket.settimeout(5)
+    print('60sec listenings on', addr)
     start_time = time.time()
-    timeout = 60
     while True:
-        ntimeout = time.time() - start_time
-        if ntimeout > timeout:
-            led.value(1)
-            gc.collect()
-            break
-        print('TimeOUT: ',ntimeout)
-        client, addr = server_socket.accept()
-        client.settimeout(5.0)
-        print('client connected from', addr)
-        request = b""
         try:
-            while not "\r\n\r\n" in request:
-                request += client.recv(512)
-        except OSError:
-            pass
-        if "HTTP" not in request:
-            client.close()
-            continue
-        url = ure.search("(?:GET|POST) /(.*?)(?:\\?.*?)? HTTP", request.decode('ascii')).group(1).rstrip("/")
-        if url == "":
-            handle_server(client,ntimeout)
-        if '/download' in request:
-            request = request.decode('utf-8')
-            file_path = extract_file_path(request)
-            print('Found path: ',file_path)
-            # client.send()
-                # Handle the download request
-            handle_download(client, file_path)
-        if '/exit' in request:
-            server_socket.close()
-            gc.collect()
-            break
-        return False
+            ntimeout = time.time() - start_time
+            if ntimeout > temp_server_timeout:
+                led.value(1)
+                gc.collect()
+                break
+            print('TimeOUT: ',ntimeout)
+            client, addr = server_socket.accept()
+            client.settimeout(5.0)
+            print('client connected from', addr)
+            request = b""
+            try:
+                while not "\r\n\r\n" in request:
+                    request += client.recv(512)
+            except OSError:
+                pass
+            if "HTTP" not in request:
+                client.close()
+                continue
+            url = ure.search("(?:GET|POST) /(.*?)(?:\\?.*?)? HTTP", request.decode('ascii')).group(1).rstrip("/")
+            if url == "":
+                handle_server(client,ntimeout)
+            if '/download' in request:
+                request = request.decode('utf-8')
+                file_path = extract_file_path(request)
+                print('Found path: ',file_path)
+                # client.send()
+                    # Handle the download request
+                handle_download(client, file_path)
+            if '/exit' in request:
+                client.close()
+                server_socket.close()
+                gc.collect()
+                break
+        except OSError as e:
+            if e.errno == 11: 
+                print("No client connected, waiting...")
+                time.sleep(0.5)
+            else:
+                print(f"Socket error: {e}")
+                break
+    server_socket.close()
     return
 
 def start(port=80):
@@ -206,6 +216,7 @@ def start(port=80):
     server_socket = socket.socket()
     server_socket.bind(addr)
     server_socket.listen(1)
+    server_socket.setblocking(False)
     print('listening on', addr)
     while True:
         client, addr = server_socket.accept()

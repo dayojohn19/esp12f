@@ -54,7 +54,7 @@ notes:
 >   - shows text data on 192.168.4.1
 
 > ### networkconfig.py
->   -   led light stays -  created webserver  192.168.4.1 to  download anything in configs folder, refresh the page after clicking download
+>   -   led light stays -  created webserver  192.168.4.1 to  download anything in configs folder, refresh the page after clicking download for (temp_server_timeout)
 >   -   fast blinking - connecting to wifi from settings
 >   -   slow blinking - webserver at 192.168.4.1 asking for wifi config
 >   - initially run the <span style="color:orange;">connectWifi([ssid=None],[password=None])</span>
