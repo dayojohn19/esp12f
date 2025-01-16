@@ -2,4 +2,4 @@ import networkconfig
 # networkconfig.connectWifi()
 
 
-print("get try versioning 3")
+print("get try versioning 000")
