@@ -107,19 +107,56 @@ def handle_server(client):
             print('its a path not file')
             pass
         else:
-            server_variable += f"""<li><a target="_blank" href="{pfile}" download="{file}">
+            server_variable += f"""<li><a  href="/download?file={pfile}" >
              {file}</a></li>
                """
 
     server_footer = """
     </ul>
+
+    <a href="/exit"> EXIT </a>
     """
     send_response(client, server_header + server_variable + server_footer)
+
+def extract_file_path(request):
+    # Manually parse the file parameter from the query string in the URL
+    print('REquest: ',request)
+    try:
+        # Extract the part after '?file=' in the request URL
+        start_index = request.find('?file=') + 6  # 'file=' is 5 characters, plus 1 for the '='
+        if start_index > 5:  # Check if '?file=' was found in the URL
+            end_index = request.find(' ', start_index)  # Find the next space after the file name
+            if end_index == -1:
+                end_index = len(request)  # If no space is found, take the rest of the string
+            return request[start_index:end_index]  # Return the filename
+    except Exception as e:
+        print(f"Error extracting file path: {e}")
+    return None
+
+def handle_download(client, fpath):
+    import os
+    if not os.stat(fpath):
+        client.send('HTTP/1.1 404 Not Found\r\n')
+        client.send('Content-Type: text/plain\r\n')
+        client.send('Connection: close\r\n\r\n')
+        client.send("File not found!")
+        return
+    client.send('HTTP/1.1 200 OK\r\n')
+    client.send('Content-Type: application/octet-stream\r\n')
+    client.send(f'Content-Disposition: attachment; filename="{fpath}"\r\n')  # Force download
+    client.send('Connection: close\r\n\r\n')
+    # client.send(fpath)
+    with open(fpath, 'rb') as f:
+        # file_content = f.read()
+        chunk = f.read(1024)
+        while chunk:
+            client.send(chunk)
+            chunk = f.read(1024)
 
 def stop_server(timer):
     global server_socket
     if server_socket:
-        print("Stopping the server...")
+        print("\n\n -----------     Stopping the server... \n\n")
         server_socket.close()  # Close the server socket
         server_socket = None
     led.value(1)
@@ -130,10 +167,11 @@ def temporary_server():
     addr = socket.getaddrinfo('192.168.4.1', 80)[0][-1]
     global server_socket
     server_socket = socket.socket()
+    server_socket.bind(addr)
     server_socket.listen(1)
     print('30sec listening on', addr)
     temporary_timer = machine.Timer(1)
-    temporary_timer.init(period=30000, mode=machine.Timer.ONE_SHOT, callback=stop_server)
+    temporary_timer.init(period=60000, mode=machine.Timer.ONE_SHOT, callback=stop_server)
     while True:
         client, addr = server_socket.accept()
         client.settimeout(5.0)
@@ -150,7 +188,15 @@ def temporary_server():
         url = ure.search("(?:GET|POST) /(.*?)(?:\\?.*?)? HTTP", request.decode('ascii')).group(1).rstrip("/")
         if url == "":
             handle_server(client)
-
+        if '/download' in request:
+            request = request.decode('utf-8')
+            file_path = extract_file_path(request)
+            print('Found path: ',file_path)
+            # client.send()
+                # Handle the download request
+            handle_download(client, file_path)
+        if '/exit' in request:
+            temporary_server.deinit()
 
 def start(port=80):
     start_blinking(1000)

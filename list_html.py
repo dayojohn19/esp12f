@@ -63,8 +63,8 @@ def send_response(client, payload, status_code=200):
 
 
 def handle_root(client):
-    data = get_data_from_file('configs/list_names.txt')  # Assuming the text file is placed at /textfile.txt
-    data2 = get_first_match_in_second_column('configs/list_names.txt', 2)
+    data = get_data_from_file('configs/listnames.txt')  # Assuming the text file is placed at /textfile.txt
+    data2 = get_first_match_in_second_column('configs/listnames.txt', 2)
     data = data+data2
     if data is None:
         return "<h1>Error reading data</h1>"    
