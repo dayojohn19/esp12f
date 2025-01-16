@@ -1,0 +1,4 @@
+import networkconfig
+networkconfig.connectWifi()
+
+
