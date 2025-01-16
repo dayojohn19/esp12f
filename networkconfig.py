@@ -1,3 +1,4 @@
+import gc
 import network
 import socket
 import ure
@@ -16,6 +17,7 @@ def wait_to_connect(wlan_sta):
     while not wlan_sta.isconnected() and time.time()-startTime<=10:
         print('connecting')
         time.sleep(0.5)
+    stop_blinking()
 
 
 def send_response(client, payload, status_code=200):
@@ -50,18 +52,14 @@ def handle_root(client):
 def handle_configure(client, request):
     import time
     match = ure.search("ssid=([^&]*)&password=(.*)", request)
-    
     if match is None:
         send_response(client, "Parameters not found", status_code=400)
         return
-    
     ssid = match.group(1)
     password = match.group(2)
-    
     if len(ssid) == 0:
         send_response(client, "SSID must be provided", status_code=400)
         return
-
     print(f"\n\n     Creating New Config for {ssid}")
     with open('configs/wifiSettings.json') as f:
         config = json.load(f)
@@ -73,11 +71,10 @@ def handle_configure(client, request):
     time.sleep(1)
     wlan_sta.connect(ssid, password)
     wait_to_connect(wlan_sta)
-    if wlan_sta.isconnected():
-        stop_blinking()
-        print("Restarting Wifi")
-        import machine
-        machine.reset()       
+    # if not wlan_sta.isconnected():
+        # print("Restarting Wifi")
+        # import machine
+        # machine.reset()       
     # handle_root(client)    
     send_response(client, "CANT CONNECT {}".format(ssid))
     
@@ -92,9 +89,10 @@ def stop():
         server_socket.close()
 
 
-def handle_server(client):
+def handle_server(client, ntimeout):
     import os
-    server_header = """
+    server_header = f"""
+    <h2>Server Remaining runtime {ntimeout}</h2>
     <h1>Files in Config</h1>
     <ul>
     """
@@ -153,26 +151,24 @@ def handle_download(client, fpath):
             client.send(chunk)
             chunk = f.read(1024)
 
-def stop_server(timer):
-    global server_socket
-    if server_socket:
-        print("\n\n -----------     Stopping the server... \n\n")
-        server_socket.close()  # Close the server socket
-        server_socket = None
-    led.value(1)
 
 def temporary_server():
-    print("server Starting")
     led.value(0)
     addr = socket.getaddrinfo('192.168.4.1', 80)[0][-1]
     global server_socket
     server_socket = socket.socket()
     server_socket.bind(addr)
     server_socket.listen(1)
-    print('30sec listening on', addr)
-    temporary_timer = machine.Timer(1)
-    temporary_timer.init(period=60000, mode=machine.Timer.ONE_SHOT, callback=stop_server)
+    print('60sec listening on', addr)
+    start_time = time.time()
+    timeout = 60
     while True:
+        ntimeout = time.time() - start_time
+        if ntimeout > timeout:
+            led.value(1)
+            gc.collect()
+            break
+        print('TimeOUT: ',ntimeout)
         client, addr = server_socket.accept()
         client.settimeout(5.0)
         print('client connected from', addr)
@@ -187,7 +183,7 @@ def temporary_server():
             continue
         url = ure.search("(?:GET|POST) /(.*?)(?:\\?.*?)? HTTP", request.decode('ascii')).group(1).rstrip("/")
         if url == "":
-            handle_server(client)
+            handle_server(client,ntimeout)
         if '/download' in request:
             request = request.decode('utf-8')
             file_path = extract_file_path(request)
@@ -196,7 +192,11 @@ def temporary_server():
                 # Handle the download request
             handle_download(client, file_path)
         if '/exit' in request:
-            temporary_server.deinit()
+            server_socket.close()
+            gc.collect()
+            break
+        return False
+    return
 
 def start(port=80):
     start_blinking(1000)
@@ -248,7 +248,7 @@ def connectWifi(wifiSSID=None,wifiPassword=None): # option to put SSID AND PAssw
     print('Temporary Making Server')
     temporary_server() # Temporary open a server
     start_blinking(150)
-    import gc
+    
     # wlan.PM_POWERSAVE
     time.sleep(1)
     gc.collect()
@@ -270,9 +270,9 @@ def connectWifi(wifiSSID=None,wifiPassword=None): # option to put SSID AND PAssw
             config["ssid"] = wifiSSID
             config["ssid_password"] = wifiPassword
             json.dump(config, f)
-        print("Restarting Wifi")
-        import machine
-        machine.reset()
+        # print("Restarting Wifi")
+        # import machine
+        # machine.reset()
     time.sleep(1)
     print(f"     Connecting:  {wifiSSID}  {wifiSSID}")
     wlan.connect(wifiSSID,wifiPassword)

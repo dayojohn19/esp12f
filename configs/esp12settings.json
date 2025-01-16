@@ -1,4 +1,4 @@
 {
     "giturl":"https://github.com/dayojohn19/esp12f/",
-    "files":["main.py","configs/list_names.txt","configs/esp12settings.json"]
+    "files":["main.py","configs/listnames.txt","configs/esp12settings.json"]
 }

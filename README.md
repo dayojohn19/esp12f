@@ -25,6 +25,18 @@ esptool.py --port /dev/cu.usbserial-10 --baud 115200 write_flash --flash_mode=do
 ```
 
 ## Better Performance
+activate virtual environment actual code:
+```
+source path/to/venv/bin/activate
+```
+then
+```
+mpy-cross filename.py
+```
+store all py file in pytompy folder
+
+all are in pymakr.conf ignore files
+
 <span style="color:orange;">pip3 install mpy-cross</span>
 
 -   `mpy-cross` [path_to_file.py]
@@ -42,6 +54,14 @@ notes:
 >   - shows text data on 192.168.4.1
 
 > ### networkconfig.py
+>   -   led light stays -  created webserver  192.168.4.1 to  download anything in configs folder, refresh the page after clicking download
+>   -   fast blinking - connecting to wifi from settings
+>   -   slow blinking - webserver at 192.168.4.1 asking for wifi config
 >   - initially run the <span style="color:orange;">connectWifi([ssid=None],[password=None])</span>
 >   
->   it will automatically open a webserver named esp_12_wifi and connect 192.168.4.1 and find a router from there
+>   -   it will automatically open a webserver named <span style="color:orange;">esp_12_wifi</span> and connect 192.168.4.1 and find a router from there
+>   -   
+
+> ### ota_git.py
+>   -   updates from [github repo](https://github.com/dayojohn19/esp12f/tree/main) 
+>   -   all files indicated in esp12settings.json
