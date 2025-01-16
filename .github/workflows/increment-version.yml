@@ -14,8 +14,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      # Step 2: Increment the version number and add timestamp to version.json
-      - name: Increment Version and Add Timestamp
+      # Step 2: Increment the version number and add human-readable timestamp to version.json
+      - name: Increment Version and Add Human-readable Timestamp
         run: |
           # Check if version.json exists, else initialize version to 0
           if [ -f version.json ]; then
@@ -28,11 +28,11 @@ jobs:
           # Increment the version number
           VERSION=$((VERSION + 1))
 
-          # Get the current UNIX timestamp
-          TIMESTAMP=$(date +%s)
+          # Get the current human-readable timestamp (e.g., "Oct 17 14:23:45 2025")
+          TIMESTAMP=$(date +"%b %d %H:%M:%S %Y")
 
-          # Write the new version and timestamp to version.json
-          echo "{\"version\": $VERSION, \"timestamp\": $TIMESTAMP}" > version.json
+          # Write the new version and human-readable timestamp to version.json
+          echo "{\"version\": $VERSION, \"timestamp\": \"$TIMESTAMP\"}" > version.json
 
           # Output the new version and timestamp for visibility
           echo "New version: $VERSION, Timestamp: $TIMESTAMP"
