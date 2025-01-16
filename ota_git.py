@@ -26,8 +26,9 @@ with open('configs/esp12settings.json') as f:
         ota_updater = OTAUpdater(SSID,PASSWORD,firmware_url,file)
         ota_updater.download_and_install_update_if_available()
         led.value(1)
-        time.sleep(1)
-led.value(1)
+        time.sleep(3)
+led.value(0)
+time.sleep(5)
 
 # ota_updater = OTAUpdater(SSID, PASSWORD, firmware_url, "test.text")
 
