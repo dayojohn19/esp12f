@@ -14,12 +14,28 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      # Step 2: Increment the version number in the version.json file
-      - name: Increment Version
+      # Step 2: Increment the version number and add timestamp to version.json
+      - name: Increment Version and Add Timestamp
         run: |
-          # Read the current version from version.json, increment it, and write it back
-          VERSION=$(jq '.version + 1' version.json)  # Increment the version
-          jq ".version = $VERSION" version.json > temp.json && mv temp.json version.json
+          # Check if version.json exists, else initialize version to 0
+          if [ -f version.json ]; then
+            # Read the current version from version.json
+            VERSION=$(jq '.version' version.json)
+          else
+            VERSION=0
+          fi
+
+          # Increment the version number
+          VERSION=$((VERSION + 1))
+
+          # Get the current UNIX timestamp
+          TIMESTAMP=$(date +%s)
+
+          # Write the new version and timestamp to version.json
+          echo "{\"version\": $VERSION, \"timestamp\": $TIMESTAMP}" > version.json
+
+          # Output the new version and timestamp for visibility
+          echo "New version: $VERSION, Timestamp: $TIMESTAMP"
 
       # Step 3: Commit the updated version.json and push it back to the repository
       - name: Commit and Push Changes
@@ -27,7 +43,7 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global user.name "GitHub Actions"
           git add version.json
-          git commit -m "Increment version number"
+          git commit -m "Increment version to $VERSION and add timestamp $TIMESTAMP"
           git push
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
