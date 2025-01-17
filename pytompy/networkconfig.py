@@ -16,7 +16,7 @@ def wait_to_connect(wlan_sta):
     startTime=time.time()
     while not wlan_sta.isconnected() and time.time()-startTime<=10:
         print('connecting')
-        time.sleep(0.5)
+        time.sleep(0.8)
     stop_blinking()
 
 
@@ -236,7 +236,6 @@ def start(port=80):
         except OSError:
             pass
         
-        print("Request is: {}".format(request))
         if "HTTP" not in request:
             # skip invalid requests
             client.close()

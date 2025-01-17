@@ -6,7 +6,7 @@ import ota_git
 # import lcd
 import gc
 gc.collect()
-files_to_update=["main.py","configs/listnames.txt","configs/esp12settings.json",'test2.txt']
+files_to_update=["main.py","configs/listnames.txt","configs/esp12settings.json",'test3.txt']
 giturl= "https://github.com/dayojohn19/esp12f/"
 
 
