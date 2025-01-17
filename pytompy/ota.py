@@ -5,6 +5,7 @@ import json
 import machine
 from time import sleep
 import gc
+
 class OTAUpdater:
     def __init__(self, ssid, password, repo_url, filenames):
         self.filenames = filenames
@@ -83,7 +84,8 @@ class OTAUpdater:
             self.latest_version = int(data['version'])
             print(f'latest version is: {self.latest_version}')
         except:
-            self.latest_version = 0
+            self.latest_version = 2
+            self.current_version = 1
         newer_version_available = True if self.current_version < self.latest_version else False
         
         print(f'Newer version available: {newer_version_available}')    
