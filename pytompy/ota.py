@@ -78,9 +78,12 @@ class OTAUpdater:
         
         self.connect_wifi()
         response = urequests.get(self.version_url)
-        data = json.loads(response.text)
-        self.latest_version = int(data['version'])
-        print(f'latest version is: {self.latest_version}')
+        try:
+            data = json.loads(response.text)
+            self.latest_version = int(data['version'])
+            print(f'latest version is: {self.latest_version}')
+        except:
+            self.latest_version = 0
         newer_version_available = True if self.current_version < self.latest_version else False
         
         print(f'Newer version available: {newer_version_available}')    
