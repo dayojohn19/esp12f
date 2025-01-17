@@ -1,4 +1,4 @@
-from mpy.ota import OTAUpdater
+from ota import OTAUpdater
 # from WIFI_CONFIG import SSID, PASSWORD
 import json
 import time
@@ -28,13 +28,13 @@ with open('configs/wifiSettings.json') as f:
 #         led.value(1)
 #         time.sleep(3)
 from main import files_to_update, giturl
-for file in files_to_update:
-    print(f'updating {file} ')
-    led.value(0)
-    ota_updater = OTAUpdater(SSID,PASSWORD,giturl,file)
-    ota_updater.download_and_install_update_if_available()    
-    led.value(1)
-    time.sleep(3)
+# for file in files_to_update:
+    # print(f'\n\nupdating {file} ')
+led.value(0)
+ota_updater = OTAUpdater(SSID,PASSWORD,giturl,files_to_update)
+ota_updater.download_and_install_update_if_available()    
+led.value(1)
+time.sleep(3)
 
 
 led.value(1)

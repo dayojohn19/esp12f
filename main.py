@@ -1,7 +1,7 @@
 # import networkconfig
 import ota_git
 # import lcd
-files_to_update=["main.py","configs/listnames.txt","configs/esp12settings.json","testupload.txt","textfileadd.txt"]
+files_to_update=["main.py","configs/listnames.txt","configs/esp12settings.json","testupload.txt","textfileadd.txt","test1.txt"]
 giturl= "https://github.com/dayojohn19/esp12f/"
 
 
