@@ -2,6 +2,7 @@ import network
 import urequests
 import os
 import json
+import gc
 import machine
 from time import sleep
 
@@ -54,13 +55,13 @@ class OTAUpdater:
             # Fetch the latest code from the repo.
             response = urequests.get(self.firmware_urls[i])
             if response.status_code == 200:
-                print(f'Fetched latest firmware code, status: {response.status_code}, -  {response.text}')
+                print(f'Fetched latest firmware code, status: ')
                 # Save the fetched code to memory
                 self.latest_code = response.text
                 with open('latest_code.py', 'w') as f:
                     f.write(self.latest_code)
                     sleep(0.2)
-                    print(f"Updating device... (Renaming latest_code.py to {self.filename})", end="")
+                    print(f"Updating device... (Renaming latest_code.py to {self.filenames[i]})", end="")
                     # Overwrite the old code.
                     os.rename('latest_code.py', self.filenames[i])  
                     sleep(0.2)
@@ -69,6 +70,7 @@ class OTAUpdater:
             elif response.status_code == 404:
                 print(f'Firmware not found - {self.firmware_url}.')
                 pass
+            gc.collect()
             print('\n\n Done Updating: ',self.filenames[i])
             sleep(1.5)
         self.current_version = self.latest_version
