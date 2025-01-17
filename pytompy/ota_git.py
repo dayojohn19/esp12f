@@ -18,18 +18,27 @@ with open('configs/wifiSettings.json') as f:
 from main import files_to_update, giturl
 
 led.value(0)
+
+# for file in files_to_update:
 ota_updater = OTAUpdater(SSID,PASSWORD,giturl,files_to_update)
 ota_updater.download_and_install_update_if_available()    
+    
+stop_blinking()
+
+
 led.value(1)
 for i in range(20):
     led.value(0)
-    time.sleep(100)
+    time.sleep(0.1)
     led.value(1)
-    time.sleep(100)
+    time.sleep(0.1)
 for i in range(5):
     led.value(0)
-    time.sleep(1000)
+    time.sleep(1)
     led.value(1)
-    time.sleep(1000)
+    time.sleep(1)
 led.value(1)
+
+# import machine
+# machine.reset()
 

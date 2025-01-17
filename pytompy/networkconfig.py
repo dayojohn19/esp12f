@@ -71,9 +71,10 @@ def handle_configure(client, request):
     wlan_sta.connect(ssid, password)
     wait_to_connect(wlan_sta)
     # if not wlan_sta.isconnected():
+    if wlan_sta.isconnected():
         # print("Restarting Wifi")
-        # import machine
-        # machine.reset()       
+        import machine
+        machine.reset()       
     # handle_root(client)    
     send_response(client, "CANT CONNECT {}".format(ssid))
     
@@ -152,6 +153,9 @@ def handle_download(client, fpath):
 
 
 def temporary_server():
+    # wlan_sta.active(False)
+    # wlan_ap.active(True)
+    # wlan_ap.config(essid='ESP12', password='1234')
     led.value(0)
     addr = socket.getaddrinfo('192.168.4.1', 80)[0][-1]
     global server_socket
@@ -204,19 +208,23 @@ def temporary_server():
             else:
                 print(f"Socket error: {e}")
                 break
+    client.close()
     server_socket.close()
+    # ap_if.active(False)
     return
 
 def start(port=80):
-    start_blinking(1000)
+    start_blinking(2000)
     addr = socket.getaddrinfo('192.168.4.1', 80)[0][-1]
     global server_socket
     stop()
     server_socket = socket.socket()
     server_socket.bind(addr)
     server_socket.listen(1)
-    server_socket.setblocking(False)
+    # server_socket.setblocking(False)
     print('listening on', addr)
+    wlan_ap.active(True)
+    # wlan_sta
     while True:
         client, addr = server_socket.accept()
         client.settimeout(5.0)
@@ -245,6 +253,7 @@ def start(port=80):
             handle_not_found(client, url)
         
         client.close()
+    ap_if.active(False)
 
 
 
@@ -253,14 +262,15 @@ def start(port=80):
 
 
 def connectWifi(wifiSSID=None,wifiPassword=None): # option to put SSID AND PAssword
-    wlan = network.WLAN(network.STA_IF)
-    wlan.active(True)
     print('Temporary Making Server')
     temporary_server() # Temporary open a server
+    wlan = network.WLAN(network.STA_IF)
+    wlan.active(True)
     start_blinking(150)
     
     # wlan.PM_POWERSAVE
     time.sleep(1)
+    import gc
     gc.collect()
     time.sleep(1)
     esp.osdebug(None)
@@ -280,14 +290,10 @@ def connectWifi(wifiSSID=None,wifiPassword=None): # option to put SSID AND PAssw
             config["ssid"] = wifiSSID
             config["ssid_password"] = wifiPassword
             json.dump(config, f)
-        # print("Restarting Wifi")
-        # import machine
-        # machine.reset()
     time.sleep(1)
     print(f"     Connecting:  {wifiSSID}  {wifiSSID}")
     wlan.connect(wifiSSID,wifiPassword)
     wait_to_connect(wlan)
-
     time.sleep(1)
     WifiName = wifiSSID
     time.sleep(1)
@@ -300,6 +306,7 @@ def connectWifi(wifiSSID=None,wifiPassword=None): # option to put SSID AND PAssw
     else:
         stop_blinking()
         print('Cant Connect Restarting')
+        gc.collect()
         time.sleep(1)
         start()
         # return [False, ' Wifi not Connected ']
