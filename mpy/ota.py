@@ -61,6 +61,7 @@ class OTAUpdater:
                 with open('latest_code.py', 'w') as f:
                     f.write(self.latest_code)
                     print(f"Updating device... (Renaming latest_code.py to {self.filenames[i]})", end="")
+                    print(f"\n Link   {self.firmware_urls[i]}{self.filenames[i]} \n\n")
                     # Overwrite the old code.
                     os.rename('latest_code.py', self.filenames[i])  
                     # Restart the device to run the new code.
