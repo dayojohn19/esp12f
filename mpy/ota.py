@@ -61,7 +61,8 @@ class OTAUpdater:
                 with open('latest_code.py', 'w') as f:
                     f.write(self.latest_code)
                     print(f"Updating device... (Renaming latest_code.py to {self.filenames[i]})", end="")
-                    print(f"\n Link   {self.firmware_urls[i]}{self.filenames[i]} \n\n")
+                    print(response.text)
+                    print(f"\n Link   {self.firmware_urls[i]} \n\n")
                     # Overwrite the old code.
                     os.rename('latest_code.py', self.filenames[i])  
                     # Restart the device to run the new code.
@@ -125,7 +126,7 @@ class OTAUpdater:
         """ Check for updates, download and install them."""
         if self.check_for_updates():
             if self.fetch_latest_code():
-                # self.update_no_reset() 
+                self.update_no_reset() 
                 self.update_and_reset() 
         else:
             print('No new updates available.')
