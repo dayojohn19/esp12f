@@ -21,9 +21,15 @@ led.value(0)
 ota_updater = OTAUpdater(SSID,PASSWORD,giturl,files_to_update)
 ota_updater.download_and_install_update_if_available()    
 led.value(1)
-time.sleep(3)
-
-
+for i in range(20):
+    led.value(0)
+    time.sleep(100)
+    led.value(1)
+    time.sleep(100)
+for i in range(5):
+    led.value(0)
+    time.sleep(1000)
+    led.value(1)
+    time.sleep(1000)
 led.value(1)
-time.sleep(5)
 
