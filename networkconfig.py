@@ -6,7 +6,7 @@ import json
 import time
 import esp  
 import machine
-from led_signal import *
+from mpy.led_signal import *
 wlan_ap = network.WLAN(network.AP_IF)
 wlan_sta = network.WLAN(network.STA_IF)
 temp_server_timeout = 180
@@ -36,7 +36,6 @@ def handle_root(client):
           <label for="ssid">SSID</label>
           <select name="ssid" id="ssid">
     """
-    
     response_variable = ""
     for ssid, *_ in wlan_sta.scan():
         response_variable += '<option value="{0}">{0}</option>'.format(ssid.decode("utf-8"))
