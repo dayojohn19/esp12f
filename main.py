@@ -1,7 +1,9 @@
 import time
-
-import myp.networkconfig
-import myp.ota_git
+try:
+    import mpy.ota_git
+except Exception as e:
+    print("ERROR IMPORTING ota_git ",e)
+    import mpy.networkconfig
 
 # import lcd
 import gc

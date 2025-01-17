@@ -58,7 +58,7 @@ class OTAUpdater:
         
         elif response.status_code == 404:
             print(f'Firmware not found - {firmware_url}.')
-            return False
+            pass
 
     def update_no_reset(self):
         with open('latest_code.py', 'w') as f:
@@ -94,10 +94,15 @@ class OTAUpdater:
     def download_and_install_update_if_available(self):
         if self.check_for_updates():
             for i in range(len(self.firmware_urls)):
+                sleep(1)
                 gc.collect()
-                if self.fetch_latest_code(self.firmware_urls[i]):
-                    self.update_no_reset() 
-                    self.update_and_reset(self.filenames[i]) 
+                try:
+                    if self.fetch_latest_code(self.firmware_urls[i]):
+                        self.update_no_reset() 
+                        self.update_and_reset(self.filenames[i]) 
+                except:
+                    print('Passing: ',self.firmware_urls[i])
+                    sleep(1)
             with open('version.json', 'w') as f:
                 json.dump({'version': self.current_version}, f)
             print('Restarting device...')
