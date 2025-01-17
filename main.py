@@ -1,4 +1,6 @@
 import time
+import gc
+gc.collect()
 try:
     import mpy.ota_git
 except Exception as e:
