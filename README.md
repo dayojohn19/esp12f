@@ -3,6 +3,8 @@
 >   - after saving always run the following [git link](https://github.com/dayojohn19/esp12f/tree/main)
 >   -   edit the version.json file
 
+watching <span style="color:red;">files_to_update</span>
+
 ```
 git pull
 git add .
