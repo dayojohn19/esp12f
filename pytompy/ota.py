@@ -65,21 +65,21 @@ class OTAUpdater:
                     # Overwrite the old code.
                     os.rename('latest_code.py', self.filenames[i])  
                     sleep(0.2)
-                    self.latest_code = None
                     # Restart the device to run the new code.
             elif response.status_code == 404:
                 print(f'Firmware not found - {self.firmware_url}.')
                 pass
-            gc.collect()
             print('\n\n Done Updating: ',self.filenames[i])
             sleep(1.5)
+        gc.collect()
+        self.latest_code = None
         self.current_version = self.latest_version
         # save the current version
         with open('version.json', 'w') as f:
             json.dump({'version': self.current_version}, f)
         
         # free up some memory
-        self.latest_code = None
+        # self.latest_code = None
         print('Restarting device...')
         machine.reset()  # Reset the device to run the new code.
 
