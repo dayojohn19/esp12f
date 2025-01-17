@@ -99,3 +99,4 @@ class OTAUpdater:
             machine.reset()  
         else:
             print('No new updates available.')
+        return
