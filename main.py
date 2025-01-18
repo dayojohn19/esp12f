@@ -1,6 +1,7 @@
 import machine
 import time
-
+from mpy.led_signal import *
+start_blinking(100)
 # Create a Pin object for the LED (D4 -> GPIO2)
 led = machine.Pin(2, machine.Pin.OUT)
 import time
