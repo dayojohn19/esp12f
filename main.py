@@ -1,9 +1,9 @@
-import machine
-import time
-from mpy.led_signal import *
+
+# import time
+# from mpy.led_signal import *
 # start_blinking(100)
 # led = machine.Pin(2, machine.Pin.OUT)
-import time
+
 import gc
 gc.collect()
 try:
@@ -15,6 +15,8 @@ except Exception as e:
     time.sleep(1)
 
 # import lcd
+import machine
+import time
 import gc
 gc.collect()
 
