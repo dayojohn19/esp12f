@@ -8,6 +8,7 @@ import gc
 gc.collect()
 try:
     import mpy.networkconfig
+    gc.collect()
     import mpy.ota_git
 except Exception as e:
     print("ERROR IMPORTING ota_git ",e)
