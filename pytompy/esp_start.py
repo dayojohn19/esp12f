@@ -130,6 +130,7 @@ class OTAUpdater:
                     print('Passing: ',self.firmware_urls[i])
             with open('version.json', 'w') as f:
                 json.dump({'version': self.current_version}, f)
+
             # print('Restarting device... 5')
             # sleep(5)
             # machine.reset()  
@@ -137,6 +138,7 @@ class OTAUpdater:
         else:
             stop_blinking()
             print('No new updates available.')
+            time.sleep(2)
         return True
 # Initialize global variables
 
@@ -416,6 +418,8 @@ def connectWifi(wifiSSID=essid, wifiPassword=password):
         print('Connected to network turning wifi off')
         wlan_ap.active(False)
         if OTAUpdater():
+            print("\nOTA Updated..\n\n")
+            time.sleep(3)
             return True
         else:
             print("\n\n ****  Need to run New Update *****\n")
