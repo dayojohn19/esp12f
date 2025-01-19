@@ -176,7 +176,7 @@ def send_response(client, payload, status_code=200):
 
 def handle_root(client):
     print("scannning  wifi available")
-    time.sleep(3)
+    time.sleep(1)
     response_header = """
         <h1>Wi-Fi Client Setup</h1>
         <form action="configure" method="post">
