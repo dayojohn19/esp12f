@@ -300,6 +300,7 @@ def handle_download(client, fpath):
 
 def temporary_server():
     addr = socket.getaddrinfo('192.168.4.1', 80)[0][-1]
+    print("Starting Temporary Server",addr)
     global server_socket
     stop()
     server_socket = socket.socket()
@@ -407,7 +408,7 @@ async def start(port=80):
             client.close()
         except OSError as e:
             if e.errno == 11: 
-                print("No client connected, waiting...")
+                print("     connect to download config Files...")
                 time.sleep(1)
             else:
                 print(f"Socket error: {e}")
@@ -416,7 +417,6 @@ async def start(port=80):
     # ap_if.active(False)
 
 def connectWifi(wifiSSID=None, wifiPassword=None):
-    print('Temp srvr')
     wlan_ap.active(True)
     temporary_server()
     wlan_sta.active(True)
