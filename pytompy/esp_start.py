@@ -387,7 +387,6 @@ def connectWifi(wifiSSID=essid, wifiPassword=password):
     print('Temp srvr')
     wlan_ap.active(True)
     temporary_server()
-    wlan_ap.active(False)
     wlan_sta.active(True)
     # wlan = network.WLAN(network.STA_IF)
     time.sleep(1)
@@ -414,9 +413,15 @@ def connectWifi(wifiSSID=essid, wifiPassword=password):
     wait_to_connect(wlan_sta)
     time.sleep(1)
     if wlan_sta.isconnected():
-        print('Connected to network')
+        print('Connected to network turning wifi off')
+        wlan_ap.active(False)
         if OTAUpdater():
             return True
+        else:
+            print("\n\n ****  Need to run New Update *****\n")
+            time.sleep(3)
+            machine.reset()
+            # return False
         print("Cant Update OTA")
     else:
         gc.collect()

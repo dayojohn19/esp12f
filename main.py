@@ -1,6 +1,6 @@
 import time
 time.sleep(3)
-print("Main Starting in 3")
+print("Main Starting in 3 v2")
 time.sleep(3)
 def try_import_with_timeout(module_name, timeout_minutes=1):
     start_time = time.time()
