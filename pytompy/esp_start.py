@@ -398,19 +398,13 @@ def connectWifi(wifiSSID=essid, wifiPassword=password):
     time.sleep(1)
     esp.osdebug(None)
     time.sleep(1)
-    if wifiSSID is None:
-        with open('configs/wifiSettings.json') as f:
-            config = json.load(f)
-            wifiSSID = config['ssid']
-            wifiPassword = config['ssid_password']
-    else:
-        print(f"\n\n     Creating New Config for {wifiSSID}")
-        with open('configs/wifiSettings.json') as f:
-            config = json.load(f)
-        with open('configs/wifiSettings.json', 'w') as f:
-            config["ssid"] = wifiSSID
-            config["ssid_password"] = wifiPassword
-            json.dump(config, f)
+    print(f"\n\n     Fetching Wifi config for {wifiSSID}")
+    with open('configs/wifiSettings.json') as f:
+        config = json.load(f)
+    with open('configs/wifiSettings.json', 'w') as f:
+        config["ssid"] = wifiSSID
+        config["ssid_password"] = wifiPassword
+        json.dump(config, f)
     time.sleep(1)
     print(f"     Connecting:  {wifiSSID} ")
     wlan_sta.connect(wifiSSID, wifiPassword)
