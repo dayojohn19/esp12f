@@ -19,16 +19,19 @@ The `ClockConfig` class provides an easy way to configure and manage the DS3231 
 
 ## Usage
 
+If it reaches the Alarm it will Enable 32khz Output
+
 ### Example
+
 
 ```python
 from clockconfig import ClockConfig
 
 # Initialize the clock configuration
-clock_config = ClockConfig( sqw_pin=13, scl_pin=14, sda_pin=12, k32_pin=15,  i2c_freq=50000)  # Set I2C frequency to 50kHz to save energy
+clock_config = ClockConfig( sqw_pin=13, scl_pin=14, sda_pin=12, handler_alarm=todo_when_alarm , i2c_freq=50000)  # Set I2C frequency to 50kHz to save energy
 
 # Enable 32kHz output
-clock_config.enable_32kHz_output(True)
+clock_config.enable_32kHz_output(False)
 
 # Set SQW frequency to 1Hz to save energy
 clock_config.set_sqw_frequency(1)
@@ -61,8 +64,7 @@ Sets the frequency of the SQW output. Valid frequencies are 1, 1024, 4096, and 8
 alarm_handler(self, pin)
 Handles interrupts from the SQW pin.
 
-alarm_handler2(self, pin)
-Handles interrupts from the 32kHz pin.
+
 
 set_alarm_everyday(self, hrs, min, sec=0)
 Sets a daily alarm at the specified time.

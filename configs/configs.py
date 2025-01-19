@@ -1,16 +1,16 @@
 from machine import Pin, I2C, ADC
 
-# Servo control pin
-servo = 12  # GPIO12 (D6)
+clock_sqw = 13 # D7
+clock_scl = 14 # D5
+clock_sda = 12 # D6|
+alarm = {'am':6,'pm':17,'min':44}
 
-# I2C configuration
-scl = 14  # GPIO14 (D5)
-sda = 13  # GPIO13 (D7)
-i2c = I2C(scl=Pin(scl), sda=Pin(sda), freq=100000)
-
-# SQW and 32kHz pins
-sqw = 4  # GPIO4 (D2)
-k32 = 5  # GPIO5 (D1)
 
 # Analog read pin
 analog_pin = ADC(0)  # ADC0
+
+
+files_to_update=["main.py","configs/listnames.txt","configs/esp12settings.json",'test3.txt','test4.txt','test5.txt','clock']
+giturl= "https://github.com/dayojohn19/esp12f/"
+
+ 
