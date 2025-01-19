@@ -1,6 +1,4 @@
-
 import time
-
 def try_import_with_timeout(module_name, timeout_minutes=1):
     start_time = time.time()
     retries = 0
@@ -20,15 +18,9 @@ def try_import_with_timeout(module_name, timeout_minutes=1):
             time.sleep(2) 
     return False
 
-
 def start_esp():
-    print("Starting ESP")
-    from mpy.led_signal import led
-    led.value(0)
-    try_import_with_timeout('mpy.networkconfig', 5)
-    import gc
-    gc.collect()
-    try_import_with_timeout('mpy.ota_git', 1)
+    print("\n\nStarting ESP")
+    try_import_with_timeout('mpy.esp_start', 5)
 start_esp()
 
 # import time
@@ -48,17 +40,15 @@ def when_alarm():
 from configs.configs import *
 
 def initialize_clock():
-    from clockconfig import ClockConfig
-    clock = ClockConfig(sqw_pin=clock_sqw, scl_pin=clock_scl, sda_pin=clock_sda, handler_alarm=when_alarm, i2c_freq=50000)  # Set I2C frequency to 50kHz to save energy
+    from mpy.main_clock import Clock
+    clock = Clock(sqw_pin=clock_sqw, scl_pin=clock_scl, sda_pin=clock_sda, handler_alarm=when_alarm, i2c_freq=50000)  # Set I2C frequency to 50kHz to save energy
     # Enable 32kHz output
     clock.enable_32kHz_output(True)
-
     # Set SQW frequency to 1Hz to save energy
-    clock.i2c_freq(1)
-
+    clock.i2c_freq=1
     # Set alarms
-    clock.set_alarm_everyday(7, 30)  # Set the first alarm for 7:30 AM
-    clock.set_alarm2_everyday(17, 30)  # Set the second alarm for 5:30 PM
+    clock.set_alarm_everyday(11, 38)  # Set the first alarm for 7:30 AM
+    clock.set_alarm2_everyday(11, 40)  # Set the second alarm for 5:30 PM
 
     return clock
 
