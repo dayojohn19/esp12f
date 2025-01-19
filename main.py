@@ -1,14 +1,16 @@
 
 # import time
-# from mpy.led_signal import *
-# start_blinking(100)
-# led = machine.Pin(2, machine.Pin.OUT)
+from mpy.led_signal import led
+led.value(0)
+
 
 import gc
 gc.collect()
 try:
     import mpy.networkconfig
     gc.collect()
+    from mpy.led_signal import start_blinking
+    start_blinking(100)
     import mpy.ota_git
 except Exception as e:
     print("ERROR IMPORTING ota_git ",e)
