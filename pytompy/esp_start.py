@@ -9,7 +9,7 @@ import urequests
 import os
 import machine
 from time import sleep
-
+import uasyncio as asyncio
 from configs.configs import essid,password,server_addr,giturl, files_to_update
 
 timer = None
@@ -28,6 +28,18 @@ def stop_blinking():
         timer.deinit() 
         timer = None 
         led.value(1)
+
+
+async def dontwait(thelazyfunction,timeout=60):
+    print('were not waiting you till you finish',timeout)
+    time.sleep(2)
+    try:
+        # Run the function with a timeout of 3 seconds
+        await asyncio.wait_for(thelazyfunction(), timeout)
+        print("Function finished successfully.")
+    except asyncio.TimeoutError:
+        print("Function timed out.")
+
 
 class OTAUpdater:
     print("OTA Updating")
@@ -77,7 +89,7 @@ class OTAUpdater:
     #         return
         
     def fetch_latest_code(self,firmware_url)->bool:
-        response = urequests.get(firmware_url)
+        response = urequests.get(firmware_url,timeout=7)
         if response.status_code == 200:
             print(f'Fetched latest firmware code, status: {response.status_code}')
             self.latest_code = response.text
@@ -120,6 +132,7 @@ class OTAUpdater:
     
     def download_and_install_update_if_available(self):
         if self.check_for_updates():
+            print('Downloading latest code...')
             for i in range(len(self.firmware_urls)):
                 gc.collect()
                 try:
@@ -150,7 +163,7 @@ wlan_ap.active(True)
 wlan_ap.config(essid=str(essid),password=str('123456789'))
 wlan_sta = network.WLAN(network.STA_IF)
 wlan_sta.active(False)
-temp_server_timeout = 40
+temp_server_timeout = 20
 server_socket = None
 start_time = None
 # LED Blinking functions
@@ -288,6 +301,7 @@ def handle_download(client, fpath):
 def temporary_server():
     addr = socket.getaddrinfo('192.168.4.1', 80)[0][-1]
     global server_socket
+    stop()
     server_socket = socket.socket()
     server_socket.bind(addr)
     server_socket.listen(1)
@@ -335,11 +349,11 @@ def temporary_server():
                 print(f"Socket error: {e}")
                 break
     gc.collect()
-    client.close()
-    server_socket.close()
-    return True
+    # client.close()
+    # server_socket.close()
+    # return True
 
-def start(port=80):
+async def start(port=80):
     stop_blinking()
     led.value(0)
     addr = socket.getaddrinfo(server_addr, 80)[0][-1]
@@ -348,46 +362,60 @@ def start(port=80):
     server_socket = socket.socket()
     server_socket.bind(addr)
     server_socket.listen(1)
+    server_socket.setblocking(False)
     print('Starting on', addr)
     wlan_sta.active(True)
     wlan_ap.active(True)
+    start_time = time.time()
     while True:
-        client, addr = server_socket.accept()
-        client.settimeout(5.0)
-        print('client connected from', addr)
-        request = b""
         try:
-            while not "\r\n\r\n" in request:
-                request += client.recv(512)
-        except OSError:
-            pass
-        
-        if "HTTP" not in request:
-            client.close()
-            continue
-        
-        url = ure.search("(?:GET|POST) /(.*?)(?:\\?.*?)? HTTP", request.decode('ascii')).group(1).rstrip("/")
-        print(f"URL is {url}")
-        gc.collect()
-        time.sleep(0.1)
+            ntimeout = time.time() - start_time
+            if ntimeout > temp_server_timeout:
+                gc.collect()
+                break
+            client, addr = server_socket.accept()
+            client.settimeout(5.0)
+            print('client connected from', addr)
+            request = b""
+            try:
+                while not "\r\n\r\n" in request:
+                    request += client.recv(512)
+            except OSError:
+                pass
+            
+            if "HTTP" not in request:
+                client.close()
+                continue
+            
+            url = ure.search("(?:GET|POST) /(.*?)(?:\\?.*?)? HTTP", request.decode('ascii')).group(1).rstrip("/")
+            print(f"URL is {url}")
+            gc.collect()
+            time.sleep(0.1)
 
-        if url == "":
-            handle_root(client)
-        elif url == "configure":
-            if handle_configure(client, request):
+            if url == "":
+                handle_root(client)
+            elif url == "configure":
+                if handle_configure(client, request):
+                    time.sleep(1)
+                    if OTAUpdater():
+                        print("OTA DONE")
+                        break
+                    machine.reset()   
+            else:
+                handle_not_found(client, url)
+            print('Looping', wlan_sta.isconnected())
+            client.close()
+        except OSError as e:
+            if e.errno == 11: 
+                print("No client connected, waiting...")
                 time.sleep(1)
-                if OTAUpdater():
-                    print("OTA DONE")
-                    break
-                machine.reset()   
-        else:
-            handle_not_found(client, url)
-        print('Looping', wlan_sta.isconnected())
-        client.close()
+            else:
+                print(f"Socket error: {e}")
+                break
         # return True
     # ap_if.active(False)
 
-def connectWifi(wifiSSID=essid, wifiPassword=password):
+def connectWifi(wifiSSID=None, wifiPassword=None):
     print('Temp srvr')
     wlan_ap.active(True)
     temporary_server()
@@ -399,12 +427,19 @@ def connectWifi(wifiSSID=essid, wifiPassword=password):
     esp.osdebug(None)
     time.sleep(1)
     print(f"\n\n     Fetching Wifi config for {wifiSSID}")
-    with open('configs/wifiSettings.json') as f:
-        config = json.load(f)
-    with open('configs/wifiSettings.json', 'w') as f:
-        config["ssid"] = wifiSSID
-        config["ssid_password"] = wifiPassword
-        json.dump(config, f)
+    if wifiSSID is None:
+        with open('configs/wifiSettings.json') as f:
+            config = json.load(f)
+            wifiSSID = config['ssid']
+            wifiPassword = config['ssid_password']
+    else:
+        print(f"\n\n     Creating New Config for {wifiSSID}")
+        with open('configs/wifiSettings.json') as f:
+            config = json.load(f)
+        with open('configs/wifiSettings.json', 'w') as f:
+            config["ssid"] = wifiSSID
+            config["ssid_password"] = wifiPassword
+            json.dump(config, f)
     time.sleep(1)
     print(f"     Connecting:  {wifiSSID} ")
     wlan_sta.connect(wifiSSID, wifiPassword)
@@ -427,8 +462,7 @@ def connectWifi(wifiSSID=essid, wifiPassword=password):
         gc.collect()
         time.sleep(1)
         print("Starting Config Server")
-        if start():
-            return True
+        asyncio.run(dontwait(start,60   ))
 
 connectWifi()
 print("Esp STARTED \n\n")
