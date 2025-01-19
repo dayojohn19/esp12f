@@ -132,9 +132,11 @@ class OTAUpdater:
                 json.dump({'version': self.current_version}, f)
 
             # print('Restarting device... 5')
+
             # sleep(5)
-            # machine.reset()  
-            return False
+            print("\n\n         Applying Updates\n\n")
+            time.sleep(3)
+            machine.reset()  
         else:
             stop_blinking()
             print('No new updates available.')
