@@ -1,20 +1,40 @@
 
-# import time
-from mpy.led_signal import led
-led.value(0)
+import time
+
+def try_import_with_timeout(module_name, timeout_minutes=1):
+    start_time = time.time()
+    retries = 0
+    max_retries = 1
+    while retries < max_retries:
+        try:
+            __import__(module_name)
+            print(f"Successfully imported {module_name}")
+            return True
+        except ImportError:
+            elapsed_time = time.time() - start_time
+            if elapsed_time > timeout_minutes * 60:
+                print(f"Timed out after {timeout_minutes} minutes, could not import {module_name}.")
+                return False
+            retries += 1
+            print(f"Failed to import {module_name}, retrying... (retries: {retries}) \n")
+            time.sleep(2) 
+    return False
 
 
-import gc
-gc.collect()
-try:
-    import mpy.networkconfig
+def start_esp():
+    print("Starting ESP")
+    from mpy.led_signal import led
+    led.value(0)
+    try_import_with_timeout('mpy.networkconfig', 5)
+    import gc
     gc.collect()
-    from mpy.led_signal import start_blinking
-    start_blinking(100)
-    import mpy.ota_git
-except Exception as e:
-    print("ERROR IMPORTING ota_git ",e)
-    time.sleep(1)
+    try_import_with_timeout('mpy.ota_git', 1)
+start_esp()
+
+# import time
+
+
+
 
 # import lcd
 import machine

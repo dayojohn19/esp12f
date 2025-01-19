@@ -6,15 +6,7 @@ import socket
 import ure
 import esp  
 from configs.configs import essid,password,server_addr
-def endall():
-    del json
-    del network
-    del gc
-    del time
-    del socket
-    del ure
-    del esp  
-    gc.collect()
+
 # Initialize global variables
 timer = None
 # Network configuration
@@ -199,7 +191,7 @@ def temporary_server():
         except OSError as e:
             if e.errno == 11: 
                 print("No client connected, waiting...")
-                time.sleep(0.5)
+                time.sleep(1)
             else:
                 print(f"Socket error: {e}")
                 break
@@ -275,7 +267,6 @@ def connectWifi(wifiSSID=None, wifiPassword=None):
     time.sleep(1)
     if wlan.isconnected():
         print('Wifi Connected')
-        endall()
         wlan_ap.active(False)
         return [True, ' Wifi Connected']
     else:
