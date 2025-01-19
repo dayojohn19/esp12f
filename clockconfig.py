@@ -10,6 +10,7 @@ import time
 class ClockConfig:
     def __init__(self, sqw_pin=13, scl_pin=14, sda_pin=12, handler_alarm=None, i2c_freq=100000 ):
         from machine import RTC
+        self.i2c_freq = i2c_freq
         self.handler_alarm = handler_alarm
         self.clock_sqw = sqw_pin  # D7
         self.clock_scl = scl_pin  # D5

@@ -94,7 +94,6 @@ class OTAUpdater:
     def download_and_install_update_if_available(self):
         if self.check_for_updates():
             for i in range(len(self.firmware_urls)):
-                sleep(1)
                 gc.collect()
                 try:
                     if self.fetch_latest_code(self.firmware_urls[i]):
@@ -102,10 +101,10 @@ class OTAUpdater:
                         self.update_and_reset(self.filenames[i]) 
                 except:
                     print('Passing: ',self.firmware_urls[i])
-                    sleep(1)
             with open('version.json', 'w') as f:
                 json.dump({'version': self.current_version}, f)
-            print('Restarting device...')
+            print('Restarting device... 5')
+            sleep(5)
             machine.reset()  
         else:
             print('No new updates available.')

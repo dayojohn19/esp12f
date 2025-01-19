@@ -1,8 +1,8 @@
 import machine
 import time
 from mpy.led_signal import *
-start_blinking(100)
-led = machine.Pin(2, machine.Pin.OUT)
+# start_blinking(100)
+# led = machine.Pin(2, machine.Pin.OUT)
 import time
 import gc
 gc.collect()
@@ -29,7 +29,7 @@ def initialize_clock():
     clock.enable_32kHz_output(True)
 
     # Set SQW frequency to 1Hz to save energy
-    clock.set_sqw_frequency(1)
+    clock.i2c_freq(1)
 
     # Set alarms
     clock.set_alarm_everyday(7, 30)  # Set the first alarm for 7:30 AM
