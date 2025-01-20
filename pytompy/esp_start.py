@@ -9,8 +9,8 @@ import urequests
 import os
 import machine
 from time import sleep
-import uasyncio as asyncio
-from configs.configs import essid,password,server_addr,giturl, files_to_update
+# import uasyncio as asyncio
+from configs.configs import ap_ssid,ap_password,server_addr,giturl, files_to_update
 
 timer = None
 led = machine.Pin(2, machine.Pin.OUT)
@@ -35,9 +35,11 @@ async def dontwait(thelazyfunction,timeout=60):
     time.sleep(2)
     try:
         # Run the function with a timeout of 3 seconds
-        await asyncio.wait_for(thelazyfunction(), timeout)
+        # await asyncio.wait_for(thelazyfunction(), timeout)
         print("Function finished successfully.")
-    except asyncio.TimeoutError:
+    # except asyncio.TimeoutError:
+    except :
+
         print("Function timed out.")
 
 
@@ -45,10 +47,10 @@ class OTAUpdater:
     print("OTA Updating")
     led.value(1)
     start_blinking(100)
-    def __init__(self, essid=essid, password=password, repo_url=giturl, filenames=files_to_update):
+    def __init__(self, ap_ssid=ap_ssid, password=ap_password, repo_url=giturl, filenames=files_to_update):
         self.filenames = filenames
-        self.ssid = essid
-        self.password = password
+        self.ssid = ap_ssid
+        self.password = ap_password
         self.repo_url = repo_url
         if "www.github.com" in self.repo_url :
             print(f"Updating {repo_url} to raw.githubusercontent")
@@ -60,20 +62,21 @@ class OTAUpdater:
         
         print(f"version url is: {self.version_url}")
 
-        self.firmware_urls = []
-        for filename in self.filenames:
-            url = self.repo_url + 'main/' + filename
-            self.firmware_urls.append(url)
 
         
         if 'version.json' in os.listdir():    
+            gc.collect()
             with open('version.json') as f:
                 self.current_version = int(json.load(f)['version'])
+                f.close()
             print(f"Current device firmware version is '{self.current_version}'")
         else:
             self.current_version = 0
             with open('version.json', 'w') as f:
                 json.dump({'version': self.current_version}, f)
+                f.close()
+            gc.collect()
+            
         self.download_and_install_update_if_available()
     # def connect_wifi(self):
     #     sta_if = network.WLAN(network.STA_IF)
@@ -81,7 +84,7 @@ class OTAUpdater:
     #     if sta_if.isconnected():
     #         return
     #     else:
-    #         sta_if.connect(self.ssid, self.password)
+    #         sta_if.connect(self.ssid, self.ap_password)
     #         while not sta_if.isconnected():
     #             print('.', end="")
     #             sleep(0.25)
@@ -131,8 +134,16 @@ class OTAUpdater:
         return newer_version_available
     
     def download_and_install_update_if_available(self):
+        gc.collect()
         if self.check_for_updates():
             print('Downloading latest code...')
+            self.firmware_urls = []
+            for filename in self.filenames:
+                time.sleep(0.1)
+                gc.collect()
+                url = self.repo_url + 'main/' + filename
+                self.firmware_urls.append(url)
+
             for i in range(len(self.firmware_urls)):
                 gc.collect()
                 try:
@@ -141,6 +152,7 @@ class OTAUpdater:
                         self.update_and_reset(self.filenames[i]) 
                 except:
                     print('Passing: ',self.firmware_urls[i])
+                time.sleep(1)
             with open('version.json', 'w') as f:
                 json.dump({'version': self.current_version}, f)
 
@@ -160,7 +172,7 @@ class OTAUpdater:
 # Network configuration
 wlan_ap = network.WLAN(network.AP_IF)
 wlan_ap.active(True)
-wlan_ap.config(essid=str(essid),password=str('123456789'))
+wlan_ap.config(essid=str(ap_ssid),password=ap_password)
 wlan_sta = network.WLAN(network.STA_IF)
 wlan_sta.active(False)
 temp_server_timeout = 20
@@ -299,6 +311,8 @@ def handle_download(client, fpath):
             chunk = f.read(1024)
 
 def temporary_server():
+    stop_blinking()
+    led.value(0)
     addr = socket.getaddrinfo('192.168.4.1', 80)[0][-1]
     print("Starting Temporary Server",addr)
     global server_socket
@@ -344,7 +358,7 @@ def temporary_server():
                 break
         except OSError as e:
             if e.errno == 11: 
-                print("No client connected, waiting...")
+                print("     connect to download config Files...")
                 time.sleep(1)
             else:
                 print(f"Socket error: {e}")
@@ -408,7 +422,7 @@ async def start(port=80):
             client.close()
         except OSError as e:
             if e.errno == 11: 
-                print("     connect to download config Files...")
+                print('connect to configure wifi')
                 time.sleep(1)
             else:
                 print(f"Socket error: {e}")
@@ -462,7 +476,8 @@ def connectWifi(wifiSSID=None, wifiPassword=None):
         gc.collect()
         time.sleep(1)
         print("Starting Config Server")
-        asyncio.run(dontwait(start,60   ))
+        start()
+        # asyncio.run(dontwait(start,60   ))
 
 connectWifi()
 print("Esp STARTED \n\n")

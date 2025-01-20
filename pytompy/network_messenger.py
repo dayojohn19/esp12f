@@ -5,9 +5,9 @@ try:
     import requests
 except:
     import urequests as requests
+from machine import UART
 
-
-from configs.configs import myPhoneNumber, whatsapp_key ,logPath, sim_rx, sim_tx
+from configs.configs import myPhoneNumber, whatsapp_key ,logPath, sim_rx, sim_tx, sim_uart
 
 class WhatsApp():
     def __init__(self):
@@ -33,11 +33,10 @@ class WhatsApp():
             return f'\nError Whatsapp message {e} '
 
 class Sim():
-    from machine import UART
-    def __init__(self,tx=sim_tx,rx=sim_rx,  baudrate=115200):
+    def __init__(self, uart_num = sim_uart,tx=sim_tx,rx=sim_rx,  baudrate=115200):
         try:
-            self.uart = UART(1, tx=tx, rx=rx)
-            print("cant use UART1")
+            print("UART1")
+            self.uart = UART(uart_num, tx=tx, rx=rx)
         except:
             print( "cant use UART2")
             self.uart = UART(2, tx=tx, rx=rx)
@@ -157,7 +156,7 @@ class Sim():
             # self.write("AT+IPR=115200\r") 
             print('Changing Baud Rate with ES BAUD RATE')
             try:
-                self.uart = UART(1,9600,tx=self.tx,rx=self.rx)
+                self.uart = UART(self.uart_num,9600,tx=self.tx,rx=self.rx)
             except:
                 self.uart = UART(2,9600,tx=self.tx,rx=self.rx)
                 
@@ -197,7 +196,7 @@ class Sim():
         time.sleep(2)
         self.write("AT+IPR?\r")
         try:
-            self.uart = UART(1,9600,tx=self.tx,rx=self.rx)
+            self.uart = UART(self.uart_num,9600,tx=self.tx,rx=self.rx)
         except:
             self.uart = UART(2,9600,tx=self.tx,rx=self.rx)
         try:

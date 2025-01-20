@@ -299,7 +299,7 @@ class Clock:
     def setup_pins(self):
         self.sqw_pin = Pin(self.clock_sqw, Pin.IN, Pin.PULL_UP)
         # self.k32_pin = Pin(self.clock_k32, Pin.IN, Pin.PULL_DOWN)
-        self.sqw_pin.irq(trigger=Pin.IRQ_FALLING, handler=self.handler_SQW)
+        self.sqw_pin.irq(trigger=3, handler=self.handler_SQW)
         # self.k32_pin.irq(trigger=Pin.IRQ_RISING, handler=self.handler_32k)
 
     def enable_32kHz_output(self, enable=False):
